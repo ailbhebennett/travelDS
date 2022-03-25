@@ -1,0 +1,32 @@
+syntax = "proto3";
+option java_multiple_files = true;
+option java_package = "travelDS.trains";
+option java_outer_classname = "travelDSServiceImpl";
+package travelDS;
+
+service travelDS{
+  //get train timetables
+  rpc getTimetable(trainNumber) returns (trainTimetable);
+  //seeing all trains out on specific train journey
+  rpc seeBus(trainSpecific) returns (trainAmount);
+  //delete trains
+  rpc deleteBus(trainNumber) returns (trainDelete);
+}
+
+message trainNumber{
+  string trainNumber=1;
+}
+message trainTimetable{
+  string trainTimetable=1;
+}
+
+message trainSpecific{
+  string trainSpecific=1;
+}
+message trainAmount{
+  string trainAmount=1;
+}
+
+message trainDelete{
+  string trainDelete=1;
+}
