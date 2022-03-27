@@ -4,20 +4,27 @@ import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
+import org.apache.commons.lang3.ArrayUtils;
 import travelDS.trains.travelDSGrpc.travelDSImplBase;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Properties;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 
 //train server class
-public class trainServer extends travelDSImplBase{
+public class trainServer extends travelDSImplBase {
 
-    public static void main (String []args) throws IOException, InterruptedException {
+    static int[] trains = {3,67,43,1,18};
+
+
+    public static void main(String[] args) throws IOException, InterruptedException {
+
         trainServer server = new trainServer();
         Properties prop = server.getProperties();
         server.register(prop);
@@ -37,7 +44,7 @@ public class trainServer extends travelDSImplBase{
 
     }
 
-    public Properties getProperties(){
+    public Properties getProperties() {
         Properties p = null;
         try (InputStream input = new FileInputStream("src/main/resources/properties/train.properties")) {
             p = new Properties();
@@ -73,17 +80,41 @@ public class trainServer extends travelDSImplBase{
     }
 
     @Override
-    public void deleteBus(trainNumber request, StreamObserver<trainDelete> responseObserver){
-        System.out.println("POOP");
-        trainDelete reply = trainDelete.newBuilder().setTrainDelete("hi").build();
-        responseObserver.onNext(reply);
+    //delete bus request
+    public void deleteBus(trainNumber request, StreamObserver<trainDelete> responseObserver) {
+
+        int trainrequest = Integer.parseInt(request.getTrainNumber());
+
+        for (int i = 0; i < trains.length; i++) {
+            if (trainrequest == trains[i]) {
+                //removing trains from system
+                trains = ArrayUtils.remove(trains, i);
+                trainDelete reply = trainDelete.newBuilder().setTrainDelete("Positive").build();
+                responseObserver.onNext(reply);
+                break;
+            } else {
+                trainDelete reply = trainDelete.newBuilder().setTrainDelete("Negitive").build();
+                responseObserver.onNext(reply);
+                break;
+            }
+        }
         responseObserver.onCompleted();
-
-
     }
 
+    @Override
+    //get amount of trains
+    public void seeBus (trainSpecific request, StreamObserver<trainAmount> responseObserver){
+        trainAmount reply = trainAmount.newBuilder().setTrainAmount(String.valueOf(trains)).build();
+        responseObserver.onNext(reply);
+        responseObserver.onCompleted();
+    }
 
-
-
-
+    @Override
+    //Is train Sold Out or not
+    public void getTimetable(trainNumber request, StreamObserver<trainTimetable> responseObserver){
+        trainTimetable reply = trainTimetable.newBuilder().setTrainTimetable("Sold Out").build();
+        responseObserver.onNext(reply);
+        responseObserver.onCompleted();
+    }
 }
+

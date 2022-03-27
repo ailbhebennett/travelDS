@@ -3,9 +3,8 @@ package travelDS.GUI;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
-import travelDS.trains.trainDelete;
-import travelDS.trains.travelDSGrpc;
-import travelDS.trains.trainNumber;
+import sun.security.x509.IPAddressName;
+import travelDS.trains.*;
 import travelDS.trains.travelDSGrpc.travelDSBlockingStub;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
@@ -18,7 +17,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
+import travelDS.trains.travelDSGrpc.*;
 import travelDS.trains.trainNumber;
 import travelDS.trains.travelDSGrpc.travelDSStub;
 
@@ -45,7 +44,7 @@ public class GUI {
         discoveryService(service_type);
         String host = serviceinfo.getHostAddresses()[0];
         ManagedChannel channel = ManagedChannelBuilder.forAddress(host, 50053).usePlaintext().build();
-        ManagedChannel channe2 = ManagedChannelBuilder.forAddress(host, 50052).usePlaintext().build();
+        ManagedChannel channel2 = ManagedChannelBuilder.forAddress(host, 50052).usePlaintext().build();
         traveldsstub = travelDSGrpc.newBlockingStub(channel);
         intializer();
     }
@@ -82,22 +81,78 @@ public class GUI {
 
     //buttons
     public void ui(JFrame frame){
-        JTextField t;
-        //JButton getTrainNumberBtn = new JButton("Get train Number");
-        //JButton trainAmountBtn = new JButton("Amount of trains out on route");
+        //train Buttons
+        JButton getTrainNumberBtn = new JButton("Get train Number");
+        JButton trainAmountBtn = new JButton("Amount of trains out on route");
         JButton deleteTrainBtn = new JButton("Delete train from route");
-        t = new JTextField(16);
+        // train text fields
+        JTextField getTrainNumberTf = new JTextField();
+        JTextField trainAmountTf = new JTextField();
+        JTextField deleteTrainTf = new JTextField();
+
+        //adding to the GUI
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(3, 2));
+        panel.add(deleteTrainTf);
+        panel.add(deleteTrainBtn);
+        panel.add(getTrainNumberTf);
+        panel.add(getTrainNumberBtn);
+        panel.add(trainAmountTf);
+        panel.add(trainAmountBtn);
+        frame.add(panel);
+
+        getTrainNumberBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try{
+                    int request = Integer.parseInt(getTrainNumberTf.getText());
+                    trainNumber requests = trainNumber.newBuilder().setTrainNumber(getTrainNumberTf.getText()).build();
+                    trainTimetable reply =  traveldsstub.getTimetable(requests);
+                    JOptionPane.showMessageDialog(frame, reply.getTrainTimetable());
+
+                }
+                catch(Exception yes){
+                    JOptionPane.showMessageDialog(frame, "Only Numbers");
+                }
+            }
+        });
+
+
+        trainAmountBtn.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //get amount of trains
+                trainSpecific request = trainSpecific.newBuilder().setTrainSpecific("Hi").build();
+                trainAmount reply = traveldsstub.seeBus(request);
+                JOptionPane.showMessageDialog(frame, reply.getTrainAmount());
+
+            }
+
+        });
+
+
+
         deleteTrainBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String hello = "hi";
-                trainNumber request = trainNumber.newBuilder().setTrainNumber(hello).build();
-                traveldsstub.deleteBus(request);
+                //reading from the TF
+                try{
+                    //if non convertable string is entered it will fail to convert and not send message
+                    int number = Integer.parseInt(deleteTrainTf.getText());
+                    trainNumber request = trainNumber.newBuilder().setTrainNumber(deleteTrainTf.getText()).build();
+                    trainDelete hellos = traveldsstub.deleteBus(request);
+                    JOptionPane.showMessageDialog(frame, hellos.getTrainDelete());
+                }
+                //error handling
+                catch(Exception yes){
+                    JOptionPane.showMessageDialog(frame, "Only Numbers");
+                }
+
             }
+
+
         });
-        deleteTrainBtn.setSize(10,10);
-        frame.add(t);
-        frame.add(deleteTrainBtn);
     }
 
 }

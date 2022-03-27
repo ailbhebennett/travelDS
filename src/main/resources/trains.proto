@@ -5,7 +5,7 @@ option java_outer_classname = "travelDSServiceImpl";
 package travelDS;
 
 service travelDS{
-  //get train timetables
+  //get train timetables --- pivot to sold out
   rpc getTimetable(trainNumber) returns (trainTimetable);
   //seeing all trains out on specific train journey
   rpc seeBus(trainSpecific) returns (trainAmount);
@@ -24,7 +24,7 @@ message trainSpecific{
   string trainSpecific=1;
 }
 message trainAmount{
-  string trainAmount=1;
+  int[] trainAmount = 1;
 }
 
 message trainDelete{
